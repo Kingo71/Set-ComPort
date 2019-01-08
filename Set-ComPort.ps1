@@ -2,23 +2,6 @@ param($remotePC, $oriCOM, $destCOM)
 
 Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
 
-# Get available COM devices
-Write-Host "Scanning for com port on" $remotePC
-Write-Host "Wait please..."
-
-[array]$COM = Get-WMIObject -ComputerName $remotePC Win32_PnPEntity | Where-Object {$_.Name -like "*(COM*"}
-foreach ($port in $COM) {$port.Caption = $port.Name.Split("(")[1].Trim(")")} # Borrow Caption for COM-number
-
-$COM = $COM | Sort-Object Caption
-
-$COMlist = New-Object System.Collections.Specialized.OrderedDictionary # Use ordered list instead of messy hash table
-foreach ($port in $COM) 
-{
-$COMlist.Add($port.Caption,$port.DeviceID)
-Write-Host ($port.Caption + " " + $port.DeviceID)
-}
-
-# And then use i.e. $COMlist["COM2"] with the function.
 
 function Set-ComPort 
 {
@@ -69,17 +52,31 @@ if ($Device)
 
 } 
 
-# Thus, the usage for changing COM2 to COM8 would be
+
+# Scanning for available COM devices on the remote machine
+Write-Host "Scanning for com port on" $remotePC
+Write-Host "Wait please..."
+
+[array]$COM = Get-WMIObject -ComputerName $remotePC Win32_PnPEntity | Where-Object {$_.Name -like "*(COM*"}
+foreach ($port in $COM) {$port.Caption = $port.Name.Split("(")[1].Trim(")")} #  Ecxtract Caption for COM number
+
+$COM = $COM | Sort-Object Caption
+
+$COMlist = New-Object System.Collections.Specialized.OrderedDictionary # Create an ordered list with COM/DEviceID pair
+foreach ($port in $COM) 
+{
+$COMlist.Add($port.Caption,$port.DeviceID)
+Write-Host ($port.Caption + " " + $port.DeviceID)
+}
 
 # Set-ComPort -DeviceID $COMlist["COM2"] -ComPort "COM8"
 
+# Check if COM port exits and invoke the function on the remote machine
 if ($COMlist[$oriCOM]){
 
-    $password = ConvertTo-SecureString “acsopsL2” -AsPlainText -Force 
-    $Cred = New-Object System.Management.Automation.PSCredential -ArgumentList "rtladm" , $password
-    
     Invoke-Command -ComputerName $remotePC -ScriptBlock ${Function:Set-ComPort} -ArgumentList $COMlist[$oriCOM] , $destCOM 
 
 }
 else { write-host $oriCOM " not found on " $remotePC
 }
+
