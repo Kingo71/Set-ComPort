@@ -1,3 +1,19 @@
+<#
+.SYNOPSIS
+Set-ComPort script by Angelo Lombardo @GRSD Amsterdam
+
+.DESCRIPTION
+Change COM port number on a remote pc 
+
+.PARAMETER remotepc
+HOST name or IP address of the remote PC
+.PARAMETER oriCOM 
+COM port to change (capital letter)
+.PARAMETER  destCOM 
+New COM port number (capital letter)
+.EXAMPLE
+./Set-ComPort.ps1 hostpc COM5 COM9  
+#>
 param($remotePC, $oriCOM, $destCOM)
 
 
