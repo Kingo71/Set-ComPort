@@ -1,6 +1,7 @@
 param($remotePC, $oriCOM, $destCOM)
 
-Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
+
+# Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "*" -Force
 
 
 function Set-ComPort 
@@ -63,13 +64,14 @@ foreach ($port in $COM) {$port.Caption = $port.Name.Split("(")[1].Trim(")")} #  
 $COM = $COM | Sort-Object Caption
 
 $COMlist = New-Object System.Collections.Specialized.OrderedDictionary # Create an ordered list with COM/DEviceID pair
+
 foreach ($port in $COM) 
 {
 $COMlist.Add($port.Caption,$port.DeviceID)
 Write-Host ($port.Caption + " " + $port.DeviceID)
 }
 
-# Set-ComPort -DeviceID $COMlist["COM2"] -ComPort "COM8"
+# Set-ComPort $COMlist["COM2"] , "COM8"  --  Usage example
 
 # Check if COM port exits and invoke the function on the remote machine
 if ($COMlist[$oriCOM]){
